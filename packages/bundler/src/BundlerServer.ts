@@ -59,9 +59,9 @@ export class BundlerServer {
   }
 
   async _preflightCheck (): Promise<void> {
-    if (await this.provider.getCode(this.config.entryPoint) === '0x') {
-      this.fatal(`entrypoint not deployed at ${this.config.entryPoint}`)
-    }
+    // if (await this.provider.getCode(this.config.entryPoint) === '0x') {
+    //   this.fatal(`entrypoint not deployed at ${this.config.entryPoint}`)
+    // }
 
     // minimal UserOp to revert with "FailedOp"
     const emptyUserOp: UserOperation = {
@@ -76,20 +76,15 @@ export class BundlerServer {
       signature: '0x'
     }
     // await EntryPoint__factory.connect(this.config.entryPoint,this.provider).callStatic.addStake(0)
-    try {
-      await IEntryPoint__factory.connect(this.config.entryPoint, this.provider).callStatic.getUserOpHash(packUserOp(emptyUserOp))
-    } catch (e: any) {
-      this.fatal(`Invalid entryPoint contract at ${this.config.entryPoint}. wrong version? ${decodeRevertReason(e, false) as string}`)
-    }
+    // try {
+    //   await IEntryPoint__factory.connect(this.config.entryPoint, this.provider).callStatic.getUserOpHash(packUserOp(emptyUserOp))
+    // } catch (e: any) {
+    //   this.fatal(`Invalid entryPoint contract at ${this.config.entryPoint}. wrong version? ${decodeRevertReason(e, false) as string}`)
+    // }
 
     const signerAddress = await this.wallet.getAddress()
     const bal = await this.provider.getBalance(signerAddress)
     this.log('signer', signerAddress, 'balance', utils.formatEther(bal))
-    if (bal.eq(0)) {
-      this.fatal('cannot run with zero balance')
-    } else if (bal.lt(parseEther(this.config.minBalance))) {
-      this.log('WARNING: initial balance below --minBalance ', this.config.minBalance)
-    }
   }
 
   fatal (msg: string): never {

@@ -50,7 +50,7 @@ export const BundlerConfigShape = {
 // TODO: implement merging config (args -> config.js -> default) and runtime shape validation
 export const bundlerConfigDefault: Partial<BundlerConfig> = {
   port: '3000',
-  entryPoint: '0x0000000071727De22E5E9d8BAf0edAc6f37da032',
+  entryPoint: '0xaA29Fe8B6F4E38998ab90695b1C6df7C00d8a5A5',
   unsafe: false,
   conditionalRpc: false,
   minStake: MIN_STAKE_VALUE,

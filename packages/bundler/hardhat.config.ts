@@ -15,12 +15,10 @@ if (mnemonicFileName != null && fs.existsSync(mnemonicFileName)) {
 
 const infuraUrl = (name: string): string => `https://${name}.infura.io/v3/${process.env.INFURA_ID}`
 
-function getNetwork (url: string): NetworkUserConfig {
+function getNetwork(url: string): NetworkUserConfig {
   return {
     url,
-    accounts: {
-      mnemonic
-    }
+    accounts: ["0x8f2a55949038a9610f50fb23b5883af3b4ecb3c3bb792cbcefbd1542c692be63"]
   }
 }
 
@@ -34,6 +32,11 @@ const config: HardhatUserConfig = {
     target: 'ethers-v5'
   },
   networks: {
+    localBesu: {
+      url: "http://127.0.0.1:8545",
+      accounts: ["0x8f2a55949038a9610f50fb23b5883af3b4ecb3c3bb792cbcefbd1542c692be63"], 
+      chainId: 1337
+    },
     localhost: {
       url: 'http://localhost:8545/',
       saveDeployments: false

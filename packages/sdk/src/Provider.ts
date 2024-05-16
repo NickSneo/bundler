@@ -6,6 +6,7 @@ import { ERC4337EthersProvider } from './ERC4337EthersProvider'
 import { HttpRpcClient } from './HttpRpcClient'
 import { Signer } from '@ethersproject/abstract-signer'
 import { DeterministicDeployer, IEntryPoint__factory, SimpleAccountFactory__factory } from '@account-abstraction/utils'
+import { Wallet } from 'ethers'
 
 /**
  * wrap an existing provider to tunnel requests through Account Abstraction.
@@ -16,7 +17,7 @@ import { DeterministicDeployer, IEntryPoint__factory, SimpleAccountFactory__fact
 export async function wrapProvider (
   originalProvider: JsonRpcProvider,
   config: ClientConfig,
-  originalSigner: Signer = originalProvider.getSigner()
+  originalSigner: Signer = new Wallet(`0x8f2a55949038a9610f50fb23b5883af3b4ecb3c3bb792cbcefbd1542c692be63`).connect(originalProvider)
 ): Promise<ERC4337EthersProvider> {
   const entryPoint = IEntryPoint__factory.connect(config.entryPointAddress, originalProvider)
   // Initial SimpleAccount instance is not deployed and exists just for the interface

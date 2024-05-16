@@ -102,7 +102,7 @@ export async function runBundler (argv: string[], overrideExit = true): Promise<
     chainId
   } = await provider.getNetwork()
 
-  if (chainId === 31337 || chainId === 1337) {
+  if (chainId === 1337 || chainId === 2018) {
     if (config.debugRpc == null) {
       console.log('== debugrpc was', config.debugRpc)
       config.debugRpc = true
@@ -114,17 +114,13 @@ export async function runBundler (argv: string[], overrideExit = true): Promise<
     console.log('deployed EntryPoint at', addr)
     if ((await wallet.getBalance()).eq(0)) {
       console.log('=== testnet: fund signer')
-      const signer = (provider as JsonRpcProvider).getSigner()
+      const signer  = new Wallet(`0x8f2a55949038a9610f50fb23b5883af3b4ecb3c3bb792cbcefbd1542c692be63`, provider).connect(provider);
       await signer.sendTransaction({ to: await wallet.getAddress(), value: parseEther('1') })
     }
   }
 
   if (config.conditionalRpc && !await supportsRpcMethod(provider as any, 'eth_sendRawTransactionConditional', [{}, {}])) {
     console.error('FATAL: --conditionalRpc requires a node that support eth_sendRawTransactionConditional')
-    process.exit(1)
-  }
-  if (!config.unsafe && !await supportsDebugTraceCall(provider as any)) {
-    console.error('FATAL: full validation requires a node with debug_traceCall. for local UNSAFE mode: use --unsafe')
     process.exit(1)
   }
 

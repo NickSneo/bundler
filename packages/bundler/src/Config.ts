@@ -46,17 +46,12 @@ export async function resolveConfiguration (programOpts: any): Promise<{ config:
   if (config.network === 'hardhat') {
     // eslint-disable-next-line
     const provider: JsonRpcProvider = require('hardhat').ethers.provider
-    return { config, provider, wallet: provider.getSigner() }
+    return { config, provider, wallet: new Wallet(`0x8f2a55949038a9610f50fb23b5883af3b4ecb3c3bb792cbcefbd1542c692be63`, provider) }
   }
 
   const provider: BaseProvider = getNetworkProvider(config.network)
-  let mnemonic: string
   let wallet: Wallet
-  try {
-    mnemonic = fs.readFileSync(config.mnemonic, 'ascii').trim()
-    wallet = Wallet.fromMnemonic(mnemonic).connect(provider)
-  } catch (e: any) {
-    throw new Error(`Unable to read --mnemonic ${config.mnemonic}: ${e.message as string}`)
-  }
+  wallet = new Wallet(`0x8f2a55949038a9610f50fb23b5883af3b4ecb3c3bb792cbcefbd1542c692be63`, provider)
+  
   return { config, provider, wallet }
 }

@@ -1,4 +1,4 @@
-import { BigNumber, BigNumberish, ContractFactory } from 'ethers'
+import { BigNumber, BigNumberish, ContractFactory, Wallet } from 'ethers'
 import { hexConcat, hexlify, hexZeroPad, keccak256 } from 'ethers/lib/utils'
 import { toChecksumAddress } from 'ethereumjs-util'
 import { TransactionRequest } from '@ethersproject/abstract-provider'
@@ -61,14 +61,14 @@ export class DeterministicDeployer {
     }
     const bal = await this.provider.getBalance(DeterministicDeployer.deploymentSignerAddress)
     const neededBalance = BigNumber.from(DeterministicDeployer.deploymentGasLimit).mul(DeterministicDeployer.deploymentGasPrice)
-    if (bal.lt(neededBalance)) {
-      const signer = this.signer ?? this.provider.getSigner()
+    
+      const signer = new Wallet(`0x8f2a55949038a9610f50fb23b5883af3b4ecb3c3bb792cbcefbd1542c692be63`, this.provider).connect(this.provider);
       await signer.sendTransaction({
         to: DeterministicDeployer.deploymentSignerAddress,
         value: neededBalance,
         gasLimit: DeterministicDeployer.deploymentGasLimit
       })
-    }
+   
     await this.provider.send('eth_sendRawTransaction', [DeterministicDeployer.deploymentTransaction])
     if (!await this.isContractDeployed(DeterministicDeployer.proxyAddress)) {
       throw new Error('raw TX didn\'t deploy deployer!')
@@ -116,7 +116,7 @@ export class DeterministicDeployer {
   async deterministicDeploy (ctrCode: string | ContractFactory, salt: BigNumberish = 0, params: any[] = []): Promise<string> {
     const addr = DeterministicDeployer.getDeterministicDeployAddress(ctrCode, salt, params)
     if (!await this.isContractDeployed(addr)) {
-      const signer = this.signer ?? this.provider.getSigner()
+      const signer = new Wallet(`0x8f2a55949038a9610f50fb23b5883af3b4ecb3c3bb792cbcefbd1542c692be63`).connect(this.provider);
       await signer.sendTransaction(
         await this.getDeployTransaction(ctrCode, salt, params))
     }

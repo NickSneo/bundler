@@ -16,7 +16,7 @@ import { runBundler } from '../runBundler'
 import { BundlerServer } from '../BundlerServer'
 import { getNetworkProvider } from '../Config'
 
-const ENTRY_POINT = '0x0000000071727De22E5E9d8BAf0edAc6f37da032'
+const ENTRY_POINT = '0xaA29Fe8B6F4E38998ab90695b1C6df7C00d8a5A5'
 
 class Runner {
   bundlerProvider!: HttpRpcClient
@@ -116,10 +116,10 @@ async function main (): Promise<void> {
   let bundler: BundlerServer | undefined
   if (opts.selfBundler != null) {
     // todo: if node is geth, we need to fund our bundler's account:
-    const signer = provider.getSigner()
+    const signer = new Wallet(`0x8f2a55949038a9610f50fb23b5883af3b4ecb3c3bb792cbcefbd1542c692be63`, provider).connect(provider);
 
     const signerBalance = await provider.getBalance(signer.getAddress())
-    const account = '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266'
+    const account = '0x627306090abaB3A6e1400e9345bC60c78a8BEf57'
     const bal = await provider.getBalance(account)
     if (bal.lt(parseEther('1')) && signerBalance.gte(parseEther('10000'))) {
       console.log('funding hardhat account', account)
@@ -136,32 +136,24 @@ async function main (): Promise<void> {
     bundler = await runBundler(argv)
     await bundler.asyncStart()
   }
-  if (opts.mnemonic != null) {
-    signer = Wallet.fromMnemonic(fs.readFileSync(opts.mnemonic, 'ascii').trim()).connect(provider)
+
+  signer = new Wallet(`0x8f2a55949038a9610f50fb23b5883af3b4ecb3c3bb792cbcefbd1542c692be63`).connect(provider);  // Create a new Wallet instance and connect it to the provider
+  
+  const network = await provider.getNetwork();
+  if (network.chainId === 1337 || network.chainId === 2018) {
+    deployFactory = true;
   } else {
-    try {
-      const accounts = await provider.listAccounts()
-      if (accounts.length === 0) {
-        console.log('fatal: no account. use --mnemonic (needed to fund account)')
-        process.exit(1)
-      }
-      // for hardhat/node, use account[0]
-      signer = provider.getSigner()
-      const network = await provider.getNetwork()
-      if (network.chainId === 1337 || network.chainId === 31337) {
-        deployFactory = true
-      }
-    } catch (e) {
-      throw new Error('must specify --mnemonic')
-    }
+    deployFactory = false;
   }
-  const accountOwner = new Wallet('0x'.padEnd(66, '7'))
+  const accountOwner = new Wallet(`0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3`, provider).connect(provider);
 
   const index = opts.nonce ?? Date.now()
   console.log('using account index=', index)
   const client = await new Runner(provider, opts.bundlerUrl, accountOwner, opts.entryPoint, index).init(deployFactory ? signer : undefined)
 
-  const addr = await client.getAddress()
+  
+  const addr = await client.getAddress();
+  console.log('client addr: ', addr)
 
   async function isDeployed (addr: string): Promise<boolean> {
     return await provider.getCode(addr).then(code => code !== '0x')
@@ -176,15 +168,16 @@ async function main (): Promise<void> {
   const gasPrice = await provider.getGasPrice()
   // TODO: actual required val
   const requiredBalance = gasPrice.mul(4e6)
-  if (bal.lt(requiredBalance.div(2))) {
+  // if (bal.lt(requiredBalance.div(2))) {
     console.log('funding account to', requiredBalance.toString())
     await signer.sendTransaction({
       to: addr,
-      value: requiredBalance.sub(bal)
+      value: 10000000000
     }).then(async tx => await tx.wait())
-  } else {
-    console.log('not funding account. balance is enough')
-  }
+  // } 
+  // else {
+  //   console.log('not funding account. balance is enough')
+  // }
 
   const dest = addr
   const data = keccak256(Buffer.from('entryPoint()')).slice(0, 10)
